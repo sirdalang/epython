@@ -88,7 +88,7 @@ def onlinedev():
 
     while True:
         scan(devdict)
-        time.sleep(60)
+        time.sleep(5 * 60)
 
 
 if __name__ == '__main__':

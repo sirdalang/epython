@@ -13,7 +13,19 @@ class DevInfo:
         self.dev_mac = ''
 
 logger = logging.getLogger('mylogger')
-logger_simple = logging.getlogger('mylogger_simple')
+logger_simple = logging.getLogger('mylogger_simple')
+
+def init_logger_simple():
+    # logger_simple
+    logger_simple.setLevel(level=logging.INFO)
+    fmt = '%(asctime)s - %(message)s'
+    format_str = logging.Formatter(fmt)
+    handle = RotatingFileHandler('log_simple',maxBytes=100*1024, backupCount=2, encoding='utf-8')
+    handle.setFormatter(format_str)
+
+    handle.namer = lambda x: 'log_simple.' + x.split('.')[-1]
+    logger_simple.addHandler(handle)
+
 
 def init_logger():
     # logger
@@ -25,16 +37,6 @@ def init_logger():
 
     handle.namer = lambda x: 'log.' + x.split('.')[-1]
     logger.addHandler(handle)
-
-    # logger_simple
-    logger_simple.setLevel(level=logging.INFO)
-    fmt = '%(asctime)s - %(message)s'
-    format_str = logging.Formatter(fmt)
-    handle = RotatingFileHandler('log',maxBytes=1000*1024, backupCount=2, encoding='utf-8')
-    handle.setFormatter(format_str)
-
-    handle.namer = lambda x: 'log_simple.' + x.split('.')[-1]
-    logger_simple.addHandler(handle)
 
 def describe_devs(devdict):
     str = '\n'
@@ -57,7 +59,7 @@ def scan(devdict):
             devdict[host].last_online_time = time_now
         else:
             logger.info ('new, insert, %(ip)s'%{'ip':host})
-            logger_simple ('%(ip)s on'%{'ip':host})
+            logger_simple.info ('%(ip)s on'%{'ip':host})
             newitem = DevInfo()
             newitem.last_online_time = time_now
             newitem.dev_ip = host
@@ -75,7 +77,7 @@ def scan(devdict):
     
     for key in outdate:
         logger.info ('%(ip)s out of date, removed'%{'ip':key})
-        logger_simple ('%(ip)s off'%{'ip':host})
+        logger_simple.info ('%(ip)s off'%{'ip':host})
         del devdict[key]
         describe_devs (devdict)
 
@@ -92,4 +94,5 @@ def onlinedev():
 
 if __name__ == '__main__':
     init_logger()
+    init_logger_simple()
     onlinedev()

@@ -69,15 +69,14 @@ def scan(devdict):
 
     outdate = []
 
-    # 清除过时项 (1 min)
+    # 清除过时项
     for key in devdict:
-        #if time_now - devdict[key].last_online_time > 1 * 60:
         if key not in nm.all_hosts():
             outdate.append(key)
     
     for key in outdate:
         logger.info ('%(ip)s out of date, removed'%{'ip':key})
-        logger_simple.info ('%(ip)s off'%{'ip':host})
+        logger_simple.info ('%(ip)s off'%{'ip':key})
         del devdict[key]
         describe_devs (devdict)
 

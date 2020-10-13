@@ -5,7 +5,7 @@
 # 2.网页身份认证方式
 # 3.RAS加密，公钥与私钥，BASE64，URL编码
 #
-# 需要安装 crypto
+# 需要安装 pycrypto
 # v1.0.0 20201010
 
 import os
@@ -14,7 +14,7 @@ import datetime
 import requests
 import json
 import base64
-import rsa
+#import rsa
 from urllib import parse
 from Crypto.Cipher import PKCS1_v1_5 as Cipher_pkcs1_v1_5
 from Crypto.PublicKey import RSA

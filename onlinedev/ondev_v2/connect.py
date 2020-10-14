@@ -21,6 +21,8 @@ from routerref import getlogindata
 from routerref import getloginid
 from routerref import getupdatingclientinfourl
 from routerref import getupdatingclientinfodata
+from routerref import parseclientinfodata
+from public import ClientInfo
 
 str_password = '123456'
 str_protocol = 'http://'
@@ -88,7 +90,12 @@ def updating(datahandler, session, id): #
     while True:
 
         response_gethost = session.post (url_update, data=updatedata, headers=header) # post
-        logging.debug (response_gethost.text)
+        # logging.debug (response_gethost.text)
+
+        list_clientinfo = []
+
+        clientinfo = parseclientinfodata(list_clientinfo, response_gethost.text)
+        datahandler.log(list_clientinfo)
 
         time.sleep(5)
 

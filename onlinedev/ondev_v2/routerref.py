@@ -3,6 +3,11 @@
 # 定义路由器页面解析相关特殊功能
 
 import json
+import logging
+import time
+from urllib import parse
+
+from public import ClientInfo
 
 string_a = "RDpbLfCPsJZ7fiv"
 string_d = "yLwVl0zKqws7LgKPRQ84Mdt708T1qQ3Ha7xv3H7NyU84p21BriUWBU43odz3iP4rBL3cD02KZciXTysVXiV8ngg6vL48rPJyAUw0HurW20xqxv9aYb4M9wK1Ae0wlro510qXeU07kV57fQMc8L6aLgMLwygtc0F10a0Dg70TOoouyFhdysuRMO51yY5ZlOZZLEal1h0t9YQW0Ko7oBwmCAHoic4HYbUyVeU3sfQ1xtXcPcf1aT303wAQhv66qzW"
@@ -72,3 +77,26 @@ def getupdatingclientinfodata(): # 构造发送获取设备信息的数据（二
     text_get_hosts_info = json.dumps (dict_get_hosts_info)
     data_get_hosts_info = text_get_hosts_info.encode()
     return data_get_hosts_info
+
+def parseclientinfodata(list_clientinfo, text): # 解析客户段信息
+    
+    dict_text = json.loads (text)
+    dict_devlist = dict_text['hosts_info']['online_host']
+
+    # logging.debug (dict_devlist)
+
+    for k in dict_devlist:
+        # logging.debug (k)
+        for t in k:
+            # logging.debug (k[t])
+            info = k[t]
+            clientinfo = ClientInfo()
+            clientinfo.mac = info['mac']
+            clientinfo.ip = info['ip']
+            clientinfo.name = parse.unquote_plus(info['hostname'])
+            clientinfo.down = info['down_speed']
+            clientinfo.up = info['up_speed']
+            list_clientinfo.append (clientinfo)
+            break;
+
+    # logging.debug (list_clientinfo)

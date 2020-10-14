@@ -8,6 +8,7 @@ import time
 from urllib import parse
 
 from public import ClientInfo
+from public import TIME_FORMAT
 
 string_a = "RDpbLfCPsJZ7fiv"
 string_d = "yLwVl0zKqws7LgKPRQ84Mdt708T1qQ3Ha7xv3H7NyU84p21BriUWBU43odz3iP4rBL3cD02KZciXTysVXiV8ngg6vL48rPJyAUw0HurW20xqxv9aYb4M9wK1Ae0wlro510qXeU07kV57fQMc8L6aLgMLwygtc0F10a0Dg70TOoouyFhdysuRMO51yY5ZlOZZLEal1h0t9YQW0Ko7oBwmCAHoic4HYbUyVeU3sfQ1xtXcPcf1aT303wAQhv66qzW"
@@ -79,11 +80,14 @@ def getupdatingclientinfodata(): # 构造发送获取设备信息的数据（二
     return data_get_hosts_info
 
 def parseclientinfodata(list_clientinfo, text): # 解析客户段信息
-    
+
     dict_text = json.loads (text)
     dict_devlist = dict_text['hosts_info']['online_host']
 
     # logging.debug (dict_devlist)
+
+    localtime = time.localtime()
+    str_localtime = time.strftime(TIME_FORMAT,localtime)
 
     for k in dict_devlist:
         # logging.debug (k)
@@ -91,6 +95,7 @@ def parseclientinfodata(list_clientinfo, text): # 解析客户段信息
             # logging.debug (k[t])
             info = k[t]
             clientinfo = ClientInfo()
+            clientinfo.time = str_localtime
             clientinfo.mac = info['mac']
             clientinfo.ip = info['ip']
             clientinfo.name = parse.unquote_plus(info['hostname'])

@@ -4,6 +4,8 @@
 
 import time
 
+TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+
 class ClientInfo: # 客户信息结构
     def __init__(self):
         self.mac = ''
@@ -23,3 +25,13 @@ class ClientInfo: # 客户信息结构
         d['down'] = self.down
         d['up'] = self.up
         return str(d)
+
+    def same(self, other):
+        if (self.mac == other.mac and
+            self.ip == other.ip and
+            self.name == other.name and
+            self.down == other.down and
+            self.up == other.up):
+            return True
+        else:
+            return False

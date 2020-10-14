@@ -6,13 +6,14 @@ import time
 
 TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
+DB_PATH = 'ondev.db'
+
 class ClientInfo: # 客户信息结构
     def __init__(self):
         self.mac = ''
         self.ip = ''
         self.name = ''
         self.time = ''
-        self.down = ''
         self.down = ''
         self.up = ''
         

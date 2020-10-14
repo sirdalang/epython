@@ -129,5 +129,3 @@ dmypy.json
 .pyre/
 
 settings.json
-onlinedev/log
-onlinedev/log_simple

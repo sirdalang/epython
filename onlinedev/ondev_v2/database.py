@@ -11,41 +11,71 @@ from public import DB_PATH
 class db:
     def __init__(self):
         logging.debug ("db enter")
+
+        self.macbuffer = dict()
+
         self.db = sqlite3.connect(DB_PATH)
         self.db.execute('CREATE TABLE IF NOT EXISTS table_mac('
-                'MAC CHAR(20) PRIMARY KEY NOT NULL'
+                'ID INTEGER PRIMARY KEY AUTOINCREMENT,'
+                'MAC CHAR(20) UNIQUE NOT NULL,'
+                'TABLENAME CHAR(20) NOT NULL,'
+                'NAME CHAR(20) NOT NULL'
             ')')
+        
+        sql = 'SELECT mac,tablename,name from table_mac'
+        cursor = self.db.execute(sql)
+        logging.debug (cursor)
+        for k in cursor:
+            logging.debug (k)
+            self.macbuffer[k[0]] = {'tablename':k[1],'name':k[2]}
+        
+        logging.debug(self.macbuffer)
+
         self.db.commit()
 
-    def gettablename(mac):
-        name = 'table_' + mac
+    def gettablename(self, mac): # 获取mac对应的表名
+        name = 't_' + mac.replace('-','_')
         return name
 
-    def create_table(self, mac): # 创建mac表
-        name = db.gettablename(mac)
-        sql = ('CREATE TABLE IF NOT EXISTS ?('
-                'ID INT PRIMARY KEY NOT NULL,'
+    def logmac(self, mac,name): # 记录mac
+        tablename = self.gettablename(mac)
+
+        if mac not in self.macbuffer:
+            sql = ('INSERT INTO table_mac (TABLENAME, MAC, NAME) '
+                'values(?,?,?)')
+            self.db.execute(sql, [tablename,mac,name])
+            self.macbuffer[mac] = {'tablename':tablename,'name':name}
+        else:
+            if self.macbuffer[mac]['name'] != name:
+                sql = 'UPDATE table_mac SET name = ? WHERE mac = ?'
+                self.db.execute(sql, [name, mac])
+                self.macbuffer[mac]['name'] = name
+    
+
+    def create_table_dev(self, mac): # 创建dev表
+        tablename = self.gettablename(mac)
+        sql = ('CREATE TABLE IF NOT EXISTS {0} ('
+                'ID INTEGER PRIMARY KEY AUTOINCREMENT,'
                 'IP CHAR(20),'
                 'NAME CHAR(20),'
                 'TIME CHAR(20),'
                 'DOWN CHAR(8),'
-                'UP CHAR(8),'
-            ')')
-        self.db.execute(sql, (name))
+                'UP CHAR(8)'
+            ')').format(tablename)
+        self.db.execute(sql)
     
     def insert_data(self, mac, clientinfo):
-        name = gettablename(mac)
-        sql = ('INSERT INTO ?(IP,NAME,TIME,DOWN,UP) '
-            'VALUES(?,?,?,?,?)')
-        self.db.execute(sql, (name,clientinfo.ip,clientinfo.name,
-            clientinfo.time,clientinfo.down,clientinfo.up))
-        
+        tablename = self.gettablename(mac)
+        sql = ('INSERT INTO %s(IP,NAME,TIME,DOWN,UP) '
+            'VALUES(?,?,?,?,?)') % (tablename)
+        self.db.execute(sql, [clientinfo.ip,clientinfo.name,
+            clientinfo.time,clientinfo.down,clientinfo.up])
 
     def log(self, clientinfo):
         mac = clientinfo.mac
 
-        cursor = self.db.execute('SELECT MAC FROM table_mac')
-        if mac not in cursor: # 新的mac
-            self.create_table(mac)
-        
+        self.logmac (clientinfo.mac,clientinfo.name)
+        self.create_table_dev (mac)
         self.insert_data (mac, clientinfo)
+
+        self.db.commit()

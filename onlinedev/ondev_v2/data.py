@@ -11,8 +11,10 @@ from public import TIME_FORMAT
 MAX_SIZE = 1
 
 def timeover60(start, end): # 判断时间是否超时
-    time_start = time.strptime(start, TIME_FORMAT)
-    time_end = time.strptime(end, TIME_FORMAT)
+    ts_start = time.strptime(start, TIME_FORMAT)
+    ts_end = time.strptime(end, TIME_FORMAT)
+    time_start = time.mktime(ts_start)
+    time_end = time.mktime(ts_end)
     if abs(time_start - time_end) > 60:
         return True
     else:

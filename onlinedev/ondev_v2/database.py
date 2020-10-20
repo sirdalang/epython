@@ -60,16 +60,17 @@ class db:
                 'NAME CHAR(20),'
                 'TIME CHAR(20),'
                 'DOWN CHAR(8),'
-                'UP CHAR(8)'
+                'UP CHAR(8),'
+                'ONLINE INTEGER'
             ')').format(tablename)
         self.db.execute(sql)
     
     def insert_data(self, mac, clientinfo):
         tablename = self.gettablename(mac)
-        sql = ('INSERT INTO %s(IP,NAME,TIME,DOWN,UP) '
-            'VALUES(?,?,?,?,?)') % (tablename)
+        sql = ('INSERT INTO %s(IP,NAME,TIME,DOWN,UP,ONLINE) '
+            'VALUES(?,?,?,?,?,?)') % (tablename)
         self.db.execute(sql, [clientinfo.ip,clientinfo.name,
-            clientinfo.time,clientinfo.down,clientinfo.up])
+            clientinfo.time,clientinfo.down,clientinfo.up,clientinfo.online])
 
     def log(self, clientinfo):
         mac = clientinfo.mac

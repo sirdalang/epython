@@ -16,6 +16,7 @@ class ClientInfo: # 客户信息结构
         self.time = ''
         self.down = ''
         self.up = ''
+        self.online = True
         
     def __str__(self):
         d = {}
@@ -25,6 +26,7 @@ class ClientInfo: # 客户信息结构
         d['time'] = self.time
         d['down'] = self.down
         d['up'] = self.up
+        d['online'] = self.online
         return str(d)
 
     def same(self, other):
@@ -32,7 +34,8 @@ class ClientInfo: # 客户信息结构
             self.ip == other.ip and
             self.name == other.name and
             self.down == other.down and
-            self.up == other.up):
+            self.up == other.up and
+            self.online == other.online):
             return True
         else:
             return False

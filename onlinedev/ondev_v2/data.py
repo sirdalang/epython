@@ -15,27 +15,33 @@ def timeover60(start, end): # 判断时间是否超时
     ts_end = time.strptime(end, TIME_FORMAT)
     time_start = time.mktime(ts_start)
     time_end = time.mktime(ts_end)
-    if abs(time_start - time_end) > 60:
+    logging.debug ('start=' + str(time_start) + ' end=' + str(time_end))
+    if abs(time_start - time_end) > 5:
         return True
     else:
         return False
 
 def checkinfo (db, list_cli, listbuf): # 执行缓存检查，进行过滤更新（有限更新）
+
     # 逐设备处理
     for cli in list_cli:
-        if len(listbuf) < MAX_SIZE:
+        if len(listbuf) < MAX_SIZE: # 初次记录
             listbuf.append({cli.mac, cli})
             db.log(cli)
+            logging.debug ('new:' + str(cli))
         else:
             # 上线处理
             if cli.mac not in listbuf[-1]: # 新上线
                 listbuf[-1][cli.mac] = cli
                 db.log(cli)
+                logging.debug ('online:' + str(cli))
             else: # 已有设备
                 if cli.same(listbuf[-1][cli.mac]): # 信息未变化
                     listbuf[-1][cli.mac].time = cli.time # 仅更新时间
                 else:
                     listbuf[-1][cli.mac] = cli # 全部更新
+                    db.log (cli)
+                    logging.debug ('update:' + str(cli))
     
     localtime = time.localtime()
     str_localtime = time.strftime(TIME_FORMAT,localtime)
@@ -49,15 +55,24 @@ def checkinfo (db, list_cli, listbuf): # 执行缓存检查，进行过滤更新
     if len(listbuf) > 0:
         removedev = [] # 记录需要删除的mac地址
         for devmac in listbuf[-1]:
+            logging.debug ('listbuf:' + str(devmac))
             if devmac not in list_cli_mac: # 下线
                 if (timeover60(listbuf[-1][devmac].time, str_localtime)): # 已足够长时间
                     #listbuf[-1].pop(dev.mac)
                     removedev.append(devmac)
-                    db.log(cli)
+                    #cli.online = False
+                    #db.log(cli)
+                    #logging.debug (cli)
                 else:
                     pass
         
         for item in removedev:
+            logging.debug ('pop:' + str(item))
+
+            cli = listbuf[-1][item]
+            cli.online = False
+            db.log (cli)
+
             listbuf[-1].pop(item)
 
 class DataHandler:
@@ -66,6 +81,7 @@ class DataHandler:
         self.clibuf = [{}] # 参考队列，队列以时间前后为分隔
     def log(self, list_cli):
         for cli in list_cli:
-           logging.debug (cli)
+            #pass
+            logging.debug ('original' + str(cli))
     
         checkinfo (self.db,list_cli, self.clibuf)

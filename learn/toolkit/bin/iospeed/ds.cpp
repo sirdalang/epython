@@ -2,7 +2,7 @@
 #include "ds.h"
 
 SWriteJob::SWriteJob() : 
-    mutex_this (PTHREAD_MUTEX_INITIALIZER),
+    m_mutex_this (PTHREAD_MUTEX_INITIALIZER),
     nKB(0),
     nCount(0),
     tvJobStart({0}),

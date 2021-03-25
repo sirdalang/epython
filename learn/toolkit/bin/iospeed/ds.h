@@ -1,21 +1,25 @@
 
 /**
- * Êı¾İ¶ÔÏó
+ * æ•°æ®å¯¹è±¡
  */
 
 #pragma once
 
-// Ğ´ÈëÈÎÎñ£ºÊı¾İ¶ÔÏó
+#include <sys/time.h>
+#include <semaphore.h>
+#include <pthread.h>
+
+// å†™å…¥ä»»åŠ¡ï¼šæ•°æ®å¯¹è±¡
 class SWriteJob 
 {
 public:
-    int nKB;        // Ã¿¸öÎÄ¼şµÄ´óĞ¡£¬µ¥Î»£ºKB
-    int nCount;     // Ğ´ÎÄ¼şµÄ¸öÊı
-    struct timeval tvJobStart;      // ÈÎÎñÆô¶¯Ê±¼ä
-    struct timeval tvJobEnd;        // ÈÎÎñ½áÊøÊ±¼ä
-    int nTotalKB;       // µ±Ç°ÒÑĞ´ÈëµÄ×Ü´óĞ¡£¬µ¥Î»£ºKB
-    int nPrintKB;       // ´òÓ¡ÖÜÆÚ¶ÔÓ¦Ğ´Èë´óĞ¡£¬µ¥Î»£ºKB
-    int nWriteBufKB;    // Ğ´Èë¿é´óĞ¡£¬µ¥Î»£ºKB
+    int nKB;        // æ¯ä¸ªæ–‡ä»¶çš„å¤§å°ï¼Œå•ä½ï¼šKB
+    int nCount;     // å†™æ–‡ä»¶çš„ä¸ªæ•°
+    struct timeval tvJobStart;      // ä»»åŠ¡å¯åŠ¨æ—¶é—´
+    struct timeval tvJobEnd;        // ä»»åŠ¡ç»“æŸæ—¶é—´
+    int nTotalKB;       // å½“å‰å·²å†™å…¥çš„æ€»å¤§å°ï¼Œå•ä½ï¼šKB
+    int nPrintKB;       // æ‰“å°å‘¨æœŸå¯¹åº”å†™å…¥å¤§å°ï¼Œå•ä½ï¼šKB
+    int nWriteBufKB;    // å†™å…¥å—å¤§å°ï¼Œå•ä½ï¼šKB
 public:
     SWriteJob();
     ~SWriteJob();

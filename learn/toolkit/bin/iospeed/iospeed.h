@@ -2,7 +2,7 @@
 /**
  * filename: iospeed.h
  * date: 20210325
- * description: ²âÊÔÉè±¸µÄ IO ĞÔÄÜ
+ * description: æµ‹è¯•è®¾å¤‡çš„ IO æ€§èƒ½
  */
 
-int write_test(int nKb, int nCount);
+int write_test(int nKB, int nCount);

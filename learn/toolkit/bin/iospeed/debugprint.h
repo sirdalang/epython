@@ -1,19 +1,20 @@
 
 #pragma once
 
-#define DEBUG
+// #define DEBUG
 
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
 #include <sys/time.h>
+#include <pthread.h>
 
 /* 打印精确到毫秒的时间 */
 #define _debug_timeprint() \
 	do { \
 		struct timeval tvTmp = {}; \
         struct tm stmTmp = {}; \
-        char szDTime[64] = {}; \
+        char szDTime[48] = {}; \
         char szResult[64] = {}; \
         \
 		gettimeofday (& tvTmp, NULL); \
@@ -39,6 +40,7 @@
 	__FILE__,__LINE__,__FUNCTION__);printf(x);} while (0)
 #endif 
 
+#ifdef DEBUG_PTHREAD_MUTEX
 
 #ifndef PTHREAD_MUTEX_DEBUG__
 #define PTHREAD_MUTEX_DEBUG__
@@ -77,3 +79,5 @@ static int DEBUG_PTHREAD_MUTEX_UNLOCK(pthread_mutex_t *mutex, const char *szMute
 #define pthread_mutex_unlock(mutex) DEBUG_PTHREAD_MUTEX_UNLOCK(mutex, #mutex, __FILE__,__LINE__,__FUNCTION__)
 
 #endif // PTHREAD_MUTEX_DEBUG__
+
+#endif // DEBUG_PTHREAD_MUTEX

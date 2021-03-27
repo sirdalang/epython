@@ -1,7 +1,9 @@
 
-CPP=arm-himix100-linux-g++
+# CPP=arm-himix100-linux-g++
+CPP=g++
 
-CFLAGS=-g -Wall
+CFLAGS=-g -Wall -Wno-unused-function
+CFLGAS+=-std=c++11
 LFLAGS=-lpthread
 
 TARGET=iospeed.out

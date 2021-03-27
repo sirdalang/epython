@@ -13,13 +13,26 @@
 class SWriteJob 
 {
 public:
-    int nKB;        // 每个文件的大小，单位：KB
-    int nCount;     // 写文件的个数
-    struct timeval tvJobStart;      // 任务启动时间
-    struct timeval tvJobEnd;        // 任务结束时间
-    int nTotalKB;       // 当前已写入的总大小，单位：KB
-    int nPrintKB;       // 打印周期对应写入大小，单位：KB
-    int nWriteBufKB;    // 写入块大小，单位：KB
+    enum STATE 
+    {
+        STATE_INITIALIZED,
+        STATE_WRITING,
+        STATE_FINISH,
+        STATE_ERROR
+    };
+    struct Data
+    {
+        int nKB;        // 每个文件的大小，单位：KB
+        int nCount;     // 写文件的个数
+        struct timeval tvJobStart;      // 任务启动时间
+        struct timeval tvJobEnd;        // 最后写入时间
+        int nTotalKB;       // 当前已写入的总大小，单位：KB
+        int nPrintKB;       // 打印周期对应写入大小，单位：KB
+        int nWriteBufKB;    // 写入块大小，单位：KB
+        int nBps;           // 当前写入速度
+        STATE eState;
+    };
+    Data d;
 public:
     SWriteJob();
     ~SWriteJob();
@@ -27,10 +40,13 @@ public:
     void unlock();
     void update();
     void waitupdate();
+    void waitupdate(double fSeconds);
+    void mkcopy(const SWriteJob &);
 private:
-    sem_t m_sem_update;
     pthread_mutex_t m_mutex_this;
+    pthread_cond_t m_cond;
+    pthread_mutex_t m_mutex_cond;
 private:
-    SWriteJob& operator=(SWriteJob const &) {};
-    SWriteJob(SWriteJob const &) {};
+    SWriteJob& operator=(SWriteJob const &);
+    SWriteJob(SWriteJob const &);
 };

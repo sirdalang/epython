@@ -17,6 +17,11 @@
 #include "ds.h"
 #include "debugprint.h"
 
+/********************** MACROS **********************/
+
+static inline int KB2B(int n) {return n * 1024;}
+static inline double B2KB(int n) {return n / 1024.0;}
+
 /********************** TPYES **********************/
 
 
@@ -28,7 +33,7 @@
 /**
  * 计算两个时间的间隔
  */
-static double DurationOf(const struct timeval *tvBegin, const struct timeval *tvEnd)
+static double DurationOf(const struct timeval *tvBegin, const struct timeval *tvEnd) 
 {
 	int nSecsDif = tvEnd->tv_sec - tvBegin->tv_sec;
 	int nMSecsDif = (tvEnd->tv_usec - tvBegin->tv_usec) / 1000;
@@ -36,54 +41,148 @@ static double DurationOf(const struct timeval *tvBegin, const struct timeval *tv
 	return (nSecsDif * 1000 + nMSecsDif) / (double)1000;
 }
 
-static void *thread_write(void *param)
+static void *thread_write(void *param) 
 {
-    pthread_detach(pthread_self());
     SWriteJob *job = (SWriteJob*)param;
 
     job->lock();
-    gettimeofday (& job->tvJobStart, NULL);
+    gettimeofday (& job->d.tvJobStart, NULL);
+    job->d.eState = SWriteJob::STATE_WRITING;
     job->unlock();
 
-    void *pMem = malloc (job->nWriteBufKB * 1000);
-    for (int i = 0; i < job->nCount; ++i) {
+    void *pMem = malloc (KB2B(job->d.nWriteBufKB));
+    for (int i = 0; i < job->d.nCount; ++i) 
+    {
         char szFilename[64] = {};
-        snprintf (szFilename, sizeof(szFilename)-1, "file_%d.dat");
-        if (access (szFilename, F_OK) == 0) {
-            _info ("file %s exist, continue with next file\n");
+        snprintf (szFilename, sizeof(szFilename)-1, "file_%d.dat", i);
+        if (access (szFilename, F_OK) == 0) 
+        {
+            _info ("file %s exist, continue with next file\n", szFilename);
             continue ;
         }
 
         int fd = open (szFilename, O_CREAT | O_RDWR, 0664);
-        if (fd < 0) {
-            _error ("create file %s failed\n");
+        if (fd < 0) 
+        {
+            _error ("create file %s failed\n", szFilename);
             break;
         }
 
-        int ret = write (fd, pMem, job->nWriteBufKB * 1000);
-        if (ret != job->nWriteBufKB * 1000) {
-            _error ("write ret=%d\n", ret);
-            close (fd);
-            fd = -1;
-            break;
+        int nBlocks = (job->d.nKB / job->d.nWriteBufKB);
+        nBlocks = (nBlocks <= 0 ? 1 : nBlocks);
+
+        for (int j = 0; j < nBlocks; ++j) 
+        {
+            struct timeval tvBlockStart = {}, tvBlockEnd = {};
+
+            gettimeofday (& tvBlockStart, NULL);
+            int ret = write (fd, pMem, KB2B(job->d.nWriteBufKB));
+            // usleep (100000);
+            gettimeofday (& tvBlockEnd, NULL);
+
+            if (ret != KB2B(job->d.nWriteBufKB)) 
+            {
+                _error ("write ret=%d\n", ret);
+                close (fd);
+                fd = -1;
+                break;
+            }
+            
+            job->lock();
+            job->d.nTotalKB += job->d.nWriteBufKB;
+            job->d.tvJobEnd = tvBlockEnd;
+            job->unlock();
         }
         close (fd);
-
-        job->lock();
-        job->nTotalKB += job->nWriteBufKB;
-        job->unlock();
-        job->update();
+        fd = -1;
     }
 
     job->lock();
-    gettimeofday (& job->tvJobEnd, NULL);
+    job->d.eState = SWriteJob::STATE_FINISH;
     job->unlock();
     job->update();
+
+    _debug ("write thread fin\n");
+
+    return NULL;
 }
 
 static void *thread_status(void *param)
 {
-    pthread_detach (pthread_self());
+    SWriteJob *job = (SWriteJob*)param;
+
+    int nKBRec = 0;
+    struct timeval tvStepBegin = {};
+    struct timeval tvStepEnd = {};
+
+    bool bFin = false;
+    while (true) 
+    {
+        SWriteJob tmpJob;
+        job->lock();
+        tmpJob.mkcopy (*job);
+        job->unlock();
+
+        switch (tmpJob.d.eState)
+        {
+            case SWriteJob::STATE_INITIALIZED:
+            {
+                break;
+            }
+            case SWriteJob::STATE_WRITING:
+            {
+                break;
+            }
+            case SWriteJob::STATE_FINISH:
+            {
+                bFin = true;
+                break;
+            }
+            default:
+            {
+                _error("unexpected value=%d\n", tmpJob.d.eState);
+                break;
+            }
+        }
+
+        if (bFin) 
+        {
+            printf ("finnish\n");
+            break;
+        }
+
+        double fCurSpeed = 0.0;
+        double fDuration = DurationOf (& tvStepBegin, & tvStepEnd);
+        if (fDuration > 0.05) 
+        {
+            fCurSpeed = (tmpJob.d.nTotalKB - nKBRec) / fDuration;
+        }
+
+        double fAvgSpeed = 0.0;
+        double fTotalDuration = DurationOf(& tmpJob.d.tvJobStart, & tmpJob.d.tvJobEnd);
+        if (fTotalDuration > 0.05) 
+        {
+            fAvgSpeed = tmpJob.d.nTotalKB / fTotalDuration;
+        }
+        
+        printf ("timer: %.2f s, bytes: %d/%d KB, cur: %.2f KB/s, avg: %.2f KB/s\n",
+                DurationOf(& tmpJob.d.tvJobStart, & tmpJob.d.tvJobEnd),
+                tmpJob.d.nTotalKB,
+                tmpJob.d.nKB * tmpJob.d.nCount,
+                fCurSpeed,
+                fAvgSpeed);
+
+        nKBRec = tmpJob.d.nTotalKB;
+        gettimeofday (& tvStepBegin, NULL);
+
+        job->waitupdate(0.25); // 1 s
+
+        gettimeofday (& tvStepEnd, NULL);
+    }
+
+    _debug ("status thread fin\n");
+
+    return NULL;
 }
 
 /**
@@ -103,6 +202,9 @@ static void start_write_test(SWriteJob *job)
         _error ("pthread_create failed\n");
     }
 
+    pthread_join (tid_write, NULL);
+    pthread_join (tid_status, NULL);
+
     return ;
 }
 
@@ -111,12 +213,9 @@ static void start_write_test(SWriteJob *job)
 int write_test(int nKB, int nCount)
 {
     SWriteJob job;
-    job.nKB = nKB;
-    job.nCount = nCount;
+    job.d.nKB = nKB;
+    job.d.nCount = nCount;
 
     start_write_test(&job);
-    while (true) {
-        sleep (60);
-    }
     return 0;
 }

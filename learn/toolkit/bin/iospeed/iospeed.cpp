@@ -175,7 +175,7 @@ static void *thread_status(void *param)
         nKBRec = tmpJob.d.nTotalKB;
         gettimeofday (& tvStepBegin, NULL);
 
-        job->waitupdate(0.25); // 1 s
+        job->waitupdate(0.25); // interval
 
         gettimeofday (& tvStepEnd, NULL);
     }

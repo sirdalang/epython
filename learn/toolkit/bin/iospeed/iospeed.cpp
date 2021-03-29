@@ -22,6 +22,8 @@
 static inline int KB2B(int n) {return n * 1024;}
 static inline double B2KB(int n) {return n / 1024.0;}
 
+#define MIN_DOUBLE_PRECISION 0.0001
+
 /********************** TPYES **********************/
 
 
@@ -47,6 +49,7 @@ static void *thread_write(void *param)
 
     job->lock();
     gettimeofday (& job->d.tvJobStart, NULL);
+    job->d.tvJobEnd = job->d.tvJobStart;
     job->d.eState = SWriteJob::STATE_WRITING;
     job->unlock();
 
@@ -145,32 +148,38 @@ static void *thread_status(void *param)
             }
         }
 
-        if (bFin) 
-        {
-            printf ("finnish\n");
-            break;
-        }
-
         double fCurSpeed = 0.0;
         double fDuration = DurationOf (& tvStepBegin, & tvStepEnd);
-        if (fDuration > 0.05) 
+        if (fDuration > MIN_DOUBLE_PRECISION) 
         {
             fCurSpeed = (tmpJob.d.nTotalKB - nKBRec) / fDuration;
         }
 
         double fAvgSpeed = 0.0;
         double fTotalDuration = DurationOf(& tmpJob.d.tvJobStart, & tmpJob.d.tvJobEnd);
-        if (fTotalDuration > 0.05) 
+        if (fTotalDuration > MIN_DOUBLE_PRECISION) 
         {
             fAvgSpeed = tmpJob.d.nTotalKB / fTotalDuration;
         }
         
         printf ("timer: %.2f s, bytes: %d/%d KB, cur: %.2f KB/s, avg: %.2f KB/s\n",
-                DurationOf(& tmpJob.d.tvJobStart, & tmpJob.d.tvJobEnd),
+                fTotalDuration,
                 tmpJob.d.nTotalKB,
                 tmpJob.d.nKB * tmpJob.d.nCount,
                 fCurSpeed,
                 fAvgSpeed);
+
+        if (bFin) 
+        {
+            printf ("finish\n");
+
+            if (fTotalDuration < 1)
+            {
+                printf ("\n\nNOTE: duration < 1s !!!\n\n");
+            }
+
+            break;
+        }
 
         nKBRec = tmpJob.d.nTotalKB;
         gettimeofday (& tvStepBegin, NULL);

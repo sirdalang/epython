@@ -5,6 +5,7 @@ CPP=g++
 CFLAGS=-g -Wall -Wno-unused-function
 CFLGAS+=-std=c++11
 LFLAGS=-lpthread
+LFLAGS+=-static-libstdc++
 
 TARGET=iospeed.out
 

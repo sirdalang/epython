@@ -27,7 +27,8 @@
 #endif 
 
 // #define  __HI3518EV300__
-#define __HI3516EV200__
+// #define __HI3516EV200__
+#define __HI3516DV300__
 
 #define	WATCHDOG_IOCTL_BASE	'W'
 
@@ -41,6 +42,14 @@
 #define WDIOC_KEEPALIVE      _IO(WATCHDOG_IOCTL_BASE, 5)                                                                 
 #define WDIOC_SETTIMEOUT     _IOWR(WATCHDOG_IOCTL_BASE, 6, int)
 #define WDIOC_GETTIMEOUT     _IOR(WATCHDOG_IOCTL_BASE, 7, int)
+#elif defined (__HI3516DV300__)
+#define    WDIOC_GETSUPPORT     _IOR(WATCHDOG_IOCTL_BASE, 0, struct watchdog_info)
+#define    WDIOC_GETSTATUS      _IOR(WATCHDOG_IOCTL_BASE, 1, int)
+#define    WDIOC_GETBOOTSTATUS  _IOR(WATCHDOG_IOCTL_BASE, 2, int)
+#define    WDIOC_SETOPTIONS     _IOWR(WATCHDOG_IOCTL_BASE, 4, int)
+#define    WDIOC_KEEPALIVE      _IO(WATCHDOG_IOCTL_BASE, 5)
+#define    WDIOC_SETTIMEOUT     _IOWR(WATCHDOG_IOCTL_BASE, 6, int)
+#define    WDIOC_GETTIMEOUT     _IOR(WATCHDOG_IOCTL_BASE, 7, int)
 #endif
 
 

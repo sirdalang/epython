@@ -27,8 +27,8 @@
 #endif 
 
 // #define  __HI3518EV300__
-// #define __HI3516EV200__
-#define __HI3516DV300__
+#define __HI3516EV200__
+// #define __HI3516DV300__
 
 #define	WATCHDOG_IOCTL_BASE	'W'
 

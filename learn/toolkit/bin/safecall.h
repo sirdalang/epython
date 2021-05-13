@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SAFECALL_H__
+#define SAFECALL_H__
 
 #define SAFE_MEMCPY(pDst,pSrc,nSizeDst,nSizeSrc)\
     do {\
@@ -9,3 +10,10 @@
     do {\
         pStr[size-1]='\0';\
     } while (0);
+
+#define SAFE_FREE(ptr)\
+    do {\
+        free (ptr); ptr=NULL; \
+    } while (0);
+
+#endif // SAFECALL_H__

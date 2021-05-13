@@ -25,6 +25,10 @@
         printf ("timestamp[%s %d %s] %s\n", __FILE__,__LINE__,__FUNCTION__, szResult); \
 	} while (0)
 
+#ifndef DEBUG
+#define DEBUG
+#endif 
+
 #ifdef DEBUG
 #define _debug(x...) do {printf("[debug][%s %d %s]", \
 	__FILE__,__LINE__,__FUNCTION__);printf(x);} while (0)

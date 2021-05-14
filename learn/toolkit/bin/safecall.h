@@ -13,7 +13,9 @@
 
 #define SAFE_FREE(ptr)\
     do {\
-        free (ptr); ptr=NULL; \
+        if (NULL != ptr) {\
+            free (ptr); ptr=NULL; \
+        }\
     } while (0);
 
 #endif // SAFECALL_H__
